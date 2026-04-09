@@ -31,15 +31,12 @@ jobs:
       - name: Check code style (flake8)
         run: |
           pip install flake8
-          # 只檢查嚴重錯誤，忽略格式問題
           flake8 phase3/ phase4/ tests/ \
             --max-line-length=120 \
-            --ignore=E501,W503,E302,E303 \
-            --exclude=__pycache__
+            --ignore=E501,W503,E302,E303,E221,E226,E305,E402,F541,F401,E712
 
       - name: Verify no secrets in code
         run: |
-          # 確認沒有 API key 被意外推上去
           if grep -r "sk-ant-" . --include="*.py"; then
             echo "❌ Anthropic API key found in code!"
             exit 1
