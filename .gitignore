@@ -1,0 +1,13 @@
+# 敏感資料
+*.jsonl
+*.env
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# API keys（永遠不要推上去）
+*secrets*
+*credentials*
