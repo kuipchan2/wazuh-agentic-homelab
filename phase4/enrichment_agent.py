@@ -103,7 +103,7 @@ def get_actionable_alerts():
         "query": {
             "bool": {
                 "must": [
-                    {"range": {"timestamp": {"gte": "now-1h"}}},
+                    {"range": {"timestamp": {"gte": "now-30d"}}},
                     {"range": {"rule.level": {"gte": 5}}}
                 ],
                 "should": [
