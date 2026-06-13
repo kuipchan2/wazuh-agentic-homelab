@@ -1,0 +1,44 @@
+{
+  "report_generated": "2026-06-13T06:19:34.399119+00:00",
+  "total_alerts_mapped": 5,
+  "essential_eight": {
+    "controls_triggered": {
+      "E8-5": 4,
+      "E8-7": 3,
+      "E8-6": 2,
+      "E8-2": 2,
+      "E8-4": 2
+    },
+    "controls_not_triggered": [
+      "E8-1",
+      "E8-3",
+      "E8-8"
+    ],
+    "coverage_pct": 62.5
+  },
+  "nist_csf_v2": {
+    "DE.CM": 5,
+    "RS.MI": 4,
+    "PR.AA": 3,
+    "RS.AN": 1,
+    "DE.AE": 1,
+    "PR.PS": 1
+  },
+  "iso_27001": {
+    "A.8.5": 3,
+    "A.5.7": 3,
+    "A.8.20": 2,
+    "A.8.16": 2,
+    "A.8.15": 1,
+    "A.8.3": 1,
+    "A.5.25": 1,
+    "A.8.8": 1,
+    "A.8.9": 1
+  },
+  "priority_distribution": {
+    "HIGH": 2,
+    "LOW": 1,
+    "MEDIUM": 1,
+    "CRITICAL": 1
+  }
+}

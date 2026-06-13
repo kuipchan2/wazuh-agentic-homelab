@@ -1,0 +1,211 @@
+{
+  "essential_eight": {
+    "E8-1": {
+      "name": "Application Control",
+      "maturity_level": "ML1",
+      "description": "Prevent execution of unapproved/malicious programs including .exe, DLL, scripts, installers",
+      "alert_indicators": [
+        "unauthorized process execution",
+        "unknown binary detected",
+        "script execution from temp directory",
+        "unapproved application launch",
+        "blocked executable",
+        "unsigned code execution"
+      ]
+    },
+    "E8-2": {
+      "name": "Patch Applications",
+      "maturity_level": "ML1",
+      "description": "Patch/mitigate vulnerabilities in internet-facing and high-risk applications within 48hrs for critical, 2 weeks otherwise",
+      "alert_indicators": [
+        "known CVE detected",
+        "outdated software version",
+        "vulnerability scan finding",
+        "unpatched application",
+        "exploit attempt against known vulnerability"
+      ]
+    },
+    "E8-3": {
+      "name": "Configure Microsoft Office Macro Settings",
+      "maturity_level": "ML1",
+      "description": "Block macros from the internet, only allow vetted macros in trusted locations",
+      "alert_indicators": [
+        "macro execution detected",
+        "office document with embedded macro",
+        "VBA execution",
+        "macro from untrusted location",
+        "document dropper detected"
+      ]
+    },
+    "E8-4": {
+      "name": "User Application Hardening",
+      "maturity_level": "ML1",
+      "description": "Configure web browsers and PDF viewers to block ads, Java, Flash, and other risky content",
+      "alert_indicators": [
+        "flash content blocked",
+        "java applet execution",
+        "web advertisement script blocked",
+        "browser plugin activity",
+        "drive-by download attempt",
+        "malicious redirect detected"
+      ]
+    },
+    "E8-5": {
+      "name": "Restrict Administrative Privileges",
+      "maturity_level": "ML1",
+      "description": "Limit admin privileges to those who need them, revalidate regularly, no internet/email/web from privileged accounts",
+      "alert_indicators": [
+        "privilege escalation",
+        "admin login",
+        "sudo usage",
+        "new admin account created",
+        "role change to administrator",
+        "privileged account used for browsing",
+        "service account interactive login"
+      ]
+    },
+    "E8-6": {
+      "name": "Patch Operating Systems",
+      "maturity_level": "ML1",
+      "description": "Patch/mitigate OS vulnerabilities within 48hrs for critical, 2 weeks otherwise; replace unsupported OS",
+      "alert_indicators": [
+        "OS vulnerability detected",
+        "kernel exploit attempt",
+        "missing OS patch",
+        "outdated OS version",
+        "end-of-life OS detected",
+        "OS-level exploit attempt"
+      ]
+    },
+    "E8-7": {
+      "name": "Multi-factor Authentication",
+      "maturity_level": "ML1",
+      "description": "MFA for VPNs, RDP, SSH, internet-facing services and privileged access",
+      "alert_indicators": [
+        "authentication without MFA",
+        "single-factor login to sensitive system",
+        "MFA bypass attempt",
+        "remote access without MFA",
+        "brute force login attempt",
+        "credential stuffing detected",
+        "SSH password authentication"
+      ]
+    },
+    "E8-8": {
+      "name": "Regular Backups",
+      "maturity_level": "ML1",
+      "description": "Regular backups of important data, software and config settings, stored disconnected, tested regularly",
+      "alert_indicators": [
+        "backup failure",
+        "ransomware detected",
+        "mass file encryption",
+        "backup integrity check failed",
+        "shadow copy deletion",
+        "mass file deletion"
+      ]
+    }
+  },
+  "nist_csf_v2": {
+    "GV.RM": {
+      "name": "Risk Management Strategy",
+      "function": "GOVERN",
+      "description": "Priorities, constraints, risk tolerance, and risk appetite are established and communicated"
+    },
+    "GV.SC": {
+      "name": "Cybersecurity Supply Chain Risk Management",
+      "function": "GOVERN",
+      "description": "Cyber supply chain risk management processes are identified and managed"
+    },
+    "ID.AM": {
+      "name": "Asset Management",
+      "function": "IDENTIFY",
+      "description": "Assets that enable the organisation to achieve business purposes are identified and managed"
+    },
+    "ID.RA": {
+      "name": "Risk Assessment",
+      "function": "IDENTIFY",
+      "description": "The organisation understands the cybersecurity risk to operations, assets, and individuals"
+    },
+    "PR.AA": {
+      "name": "Identity Management, Authentication, and Access Control",
+      "function": "PROTECT",
+      "description": "Access is limited to authorized users, services, and hardware; managed commensurate with risk"
+    },
+    "PR.AT": {
+      "name": "Awareness and Training",
+      "function": "PROTECT",
+      "description": "The organisation's personnel and partners are provided cybersecurity awareness education"
+    },
+    "PR.DS": {
+      "name": "Data Security",
+      "function": "PROTECT",
+      "description": "Data is managed consistent with the organisation's risk strategy to protect CIA"
+    },
+    "PR.IR": {
+      "name": "Technology Infrastructure Resilience",
+      "function": "PROTECT",
+      "description": "Security architectures are managed to protect asset CIA and organisational resilience"
+    },
+    "PR.PS": {
+      "name": "Platform Security",
+      "function": "PROTECT",
+      "description": "Hardware, software, and services of physical and virtual platforms are managed consistent with risk"
+    },
+    "DE.CM": {
+      "name": "Continuous Monitoring",
+      "function": "DETECT",
+      "description": "Assets are monitored to find anomalies, IOCs, and other potentially adverse events"
+    },
+    "DE.AE": {
+      "name": "Adverse Event Analysis",
+      "function": "DETECT",
+      "description": "Anomalies, IOCs, and other potentially adverse events are analysed to characterise the events"
+    },
+    "RS.MA": {
+      "name": "Incident Management",
+      "function": "RESPOND",
+      "description": "Responses to detected incidents are managed"
+    },
+    "RS.AN": {
+      "name": "Incident Analysis",
+      "function": "RESPOND",
+      "description": "Investigations are conducted to ensure effective response and support forensics"
+    },
+    "RS.MI": {
+      "name": "Incident Mitigation",
+      "function": "RESPOND",
+      "description": "Activities are performed to prevent expansion and mitigate effects of incidents"
+    },
+    "RC.RP": {
+      "name": "Incident Recovery Plan Execution",
+      "function": "RECOVER",
+      "description": "Restoration activities are performed to ensure operational availability of affected systems"
+    }
+  },
+  "iso_27001_2022": {
+    "A.5.1": {"name": "Policies for information security", "clause": "A.5"},
+    "A.5.2": {"name": "Information security roles and responsibilities", "clause": "A.5"},
+    "A.5.7": {"name": "Threat intelligence", "clause": "A.5"},
+    "A.5.23": {"name": "Information security for use of cloud services", "clause": "A.5"},
+    "A.5.24": {"name": "Information security incident management planning and preparation", "clause": "A.5"},
+    "A.5.25": {"name": "Assessment and decision on information security events", "clause": "A.5"},
+    "A.5.26": {"name": "Response to information security incidents", "clause": "A.5"},
+    "A.5.28": {"name": "Collection of evidence", "clause": "A.5"},
+    "A.5.29": {"name": "Information security during disruption", "clause": "A.5"},
+    "A.5.30": {"name": "ICT readiness for business continuity", "clause": "A.5"},
+    "A.6.3": {"name": "Information security awareness, education and training", "clause": "A.6"},
+    "A.8.1": {"name": "User endpoint devices", "clause": "A.8"},
+    "A.8.2": {"name": "Privileged access rights", "clause": "A.8"},
+    "A.8.3": {"name": "Information access restriction", "clause": "A.8"},
+    "A.8.5": {"name": "Secure authentication", "clause": "A.8"},
+    "A.8.7": {"name": "Protection against malware", "clause": "A.8"},
+    "A.8.8": {"name": "Management of technical vulnerabilities", "clause": "A.8"},
+    "A.8.9": {"name": "Configuration management", "clause": "A.8"},
+    "A.8.13": {"name": "Information backup", "clause": "A.8"},
+    "A.8.15": {"name": "Logging", "clause": "A.8"},
+    "A.8.16": {"name": "Monitoring activities", "clause": "A.8"},
+    "A.8.20": {"name": "Network security", "clause": "A.8"},
+    "A.8.23": {"name": "Web filtering", "clause": "A.8"},
+    "A.8.28": {"name": "Secure coding", "clause": "A.8"}
+  }
+}
