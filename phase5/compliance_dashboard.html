@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wazuh Compliance Posture Dashboard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0a0e17;
+    --surface: #111827;
+    --surface-2: #1a2234;
+    --border: #1e2d45;
+    --text: #e2e8f0;
+    --text-muted: #8492a6;
+    --accent: #3b82f6;
+    --green: #10b981;
+    --yellow: #f59e0b;
+    --orange: #f97316;
+    --red: #ef4444;
+    --cyan: #06b6d4;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  .dashboard {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+
+  /* Header */
+  .header {
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.25rem;
+  }
+
+  .header .subtitle {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  .header .meta {
+    display: flex;
+    gap: 1.5rem;
+    margin-top: 1rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  .header .meta span {
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .meta-value { color: var(--accent); font-weight: 600; }
+
+  /* Stats row */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem;
+  }
+
+  .stat-card .label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-card .value {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 2rem;
+    font-weight: 600;
+  }
+
+  .stat-card .unit {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  /* Main grid */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+  }
+
+  .panel-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .panel-title .flag { font-size: 1.1rem; }
+
+  /* E8 Heatmap */
+  .e8-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+  }
+
+  .e8-cell {
+    border-radius: 6px;
+    padding: 0.75rem 0.5rem;
+    text-align: center;
+    transition: transform 0.15s ease;
+    cursor: default;
+  }
+
+  .e8-cell:hover { transform: scale(1.05); }
+
+  .e8-cell .id {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+
+  .e8-cell .name {
+    font-size: 0.6rem;
+    line-height: 1.3;
+    opacity: 0.85;
+  }
+
+  .e8-cell .count {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-top: 0.35rem;
+  }
+
+  .e8-cell.active {
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: var(--green);
+  }
+
+  .e8-cell.gap {
+    background: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.15);
+    color: var(--red);
+  }
+
+  /* Priority bars */
+  .priority-list { display: flex; flex-direction: column; gap: 0.75rem; }
+
+  .priority-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .priority-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    width: 80px;
+    text-align: right;
+  }
+
+  .priority-bar-bg {
+    flex: 1;
+    height: 28px;
+    background: var(--surface-2);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .priority-bar {
+    height: 100%;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    padding-left: 0.75rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    transition: width 0.8s ease;
+  }
+
+  /* NIST & ISO tables */
+  .framework-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .framework-table th {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    text-align: left;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .framework-table td {
+    padding: 0.6rem 0;
+    border-bottom: 1px solid rgba(30, 45, 69, 0.5);
+    font-size: 0.8rem;
+  }
+
+  .framework-table td:first-child {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    color: var(--cyan);
+    width: 70px;
+  }
+
+  .framework-table td:last-child {
+    font-family: 'IBM Plex Mono', monospace;
+    text-align: right;
+    font-weight: 600;
+  }
+
+  .func-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+    font-weight: 600;
+  }
+
+  .func-PROTECT { background: rgba(59,130,246,0.15); color: var(--accent); }
+  .func-DETECT { background: rgba(6,182,212,0.15); color: var(--cyan); }
+  .func-IDENTIFY { background: rgba(245,158,11,0.15); color: var(--yellow); }
+  .func-RESPOND { background: rgba(249,115,22,0.15); color: var(--orange); }
+  .func-RECOVER { background: rgba(16,185,129,0.15); color: var(--green); }
+  .func-GOVERN { background: rgba(139,92,246,0.15); color: #8b5cf6; }
+
+  /* Full width panel */
+  .full-width { grid-column: 1 / -1; }
+
+  /* Alert detail table */
+  .alert-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+  }
+
+  .alert-table th {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    text-align: left;
+    padding: 0.6rem 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .alert-table td {
+    padding: 0.6rem 0.5rem;
+    border-bottom: 1px solid rgba(30, 45, 69, 0.5);
+    vertical-align: top;
+  }
+
+  .alert-table .rule-desc { max-width: 320px; }
+
+  .priority-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+
+  .priority-CRITICAL { background: rgba(239,68,68,0.2); color: var(--red); }
+  .priority-HIGH { background: rgba(249,115,22,0.2); color: var(--orange); }
+  .priority-MEDIUM { background: rgba(245,158,11,0.2); color: var(--yellow); }
+  .priority-LOW { background: rgba(16,185,129,0.2); color: var(--green); }
+
+  .e8-tags { display: flex; gap: 0.25rem; flex-wrap: wrap; }
+  .e8-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    padding: 0.1rem 0.35rem;
+    border-radius: 3px;
+    background: rgba(16,185,129,0.12);
+    color: var(--green);
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .footer a { color: var(--accent); text-decoration: none; }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .main-grid { grid-template-columns: 1fr; }
+    .e8-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="dashboard" id="app"></div>
+
+<script>
+// ── Data loader ──────────────────────────────────────
+// Dashboard reads from embedded data or can load from JSON files
+// To update: replace the data objects below with your latest compliance_summary.json and compliance_report.jsonl
+
+const summaryData = null;   // Will be populated by loadData()
+const reportData = null;    // Will be populated by loadData()
+
+// Default/demo data (replace with real data after running the pipeline)
+const defaultSummary = {
+  "report_generated": new Date().toISOString(),
+  "total_alerts_mapped": 5,
+  "essential_eight": {
+    "controls_triggered": {"E8-5": 5, "E8-6": 4, "E8-7": 1},
+    "controls_not_triggered": ["E8-1", "E8-2", "E8-3", "E8-4", "E8-8"],
+    "coverage_pct": 37.5
+  },
+  "nist_csf_v2": {"PR.AA": 4, "DE.CM": 3, "PR.PS": 3, "PR.IR": 2, "ID.RA": 1},
+  "iso_27001": {"A.8.2": 4, "A.8.9": 3, "A.8.16": 3, "A.8.5": 2, "A.5.1": 1},
+  "priority_distribution": {"HIGH": 3, "MEDIUM": 2}
+};
+
+const defaultAlerts = [
+  {priority:"HIGH", rule_desc:"CIS: Ensure permissions on bootloader config are configured", e8:["E8-5","E8-6"], rule_id:"19007"},
+  {priority:"HIGH", rule_desc:"CIS: Ensure time synchronization is in use", e8:["E8-6"], rule_id:"19007"},
+  {priority:"HIGH", rule_desc:"CIS: Ensure nftables default deny firewall policy", e8:["E8-5","E8-6"], rule_id:"19007"},
+  {priority:"MEDIUM", rule_desc:"CIS: Ensure events that modify user/group info are collected", e8:["E8-5"], rule_id:"19007"},
+  {priority:"MEDIUM", rule_desc:"SCA summary: Score less than 80%", e8:["E8-5","E8-6","E8-7"], rule_id:"19003"},
+];
+
+// ── Essential Eight reference ────────────────────────
+const e8Names = {
+  "E8-1": "App Control",
+  "E8-2": "Patch Apps",
+  "E8-3": "Office Macros",
+  "E8-4": "App Hardening",
+  "E8-5": "Restrict Admin",
+  "E8-6": "Patch OS",
+  "E8-7": "MFA",
+  "E8-8": "Backups"
+};
+
+// ── NIST CSF v2 reference ────────────────────────────
+const nistRef = {
+  "GV.RM": {name:"Risk Management Strategy", fn:"GOVERN"},
+  "GV.SC": {name:"Supply Chain Risk Mgmt", fn:"GOVERN"},
+  "ID.AM": {name:"Asset Management", fn:"IDENTIFY"},
+  "ID.RA": {name:"Risk Assessment", fn:"IDENTIFY"},
+  "PR.AA": {name:"Identity & Access Control", fn:"PROTECT"},
+  "PR.AT": {name:"Awareness & Training", fn:"PROTECT"},
+  "PR.DS": {name:"Data Security", fn:"PROTECT"},
+  "PR.IR": {name:"Infrastructure Resilience", fn:"PROTECT"},
+  "PR.PS": {name:"Platform Security", fn:"PROTECT"},
+  "DE.CM": {name:"Continuous Monitoring", fn:"DETECT"},
+  "DE.AE": {name:"Adverse Event Analysis", fn:"DETECT"},
+  "RS.MA": {name:"Incident Management", fn:"RESPOND"},
+  "RS.AN": {name:"Incident Analysis", fn:"RESPOND"},
+  "RS.MI": {name:"Incident Mitigation", fn:"RESPOND"},
+  "RC.RP": {name:"Recovery Execution", fn:"RECOVER"}
+};
+
+// ── Render ───────────────────────────────────────────
+function render(summary, alerts) {
+  const app = document.getElementById('app');
+  const total = summary.total_alerts_mapped;
+  const e8 = summary.essential_eight;
+  const priorities = summary.priority_distribution;
+  const maxPriority = Math.max(...Object.values(priorities));
+
+  app.innerHTML = `
+    <div class="header">
+      <h1>Compliance Posture Dashboard</h1>
+      <div class="subtitle">Wazuh SIEM → Claude AI → Multi-Framework Compliance Mapping</div>
+      <div class="meta">
+        <span>Generated <span class="meta-value">${new Date(summary.report_generated).toLocaleDateString('en-AU', {day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</span></span>
+        <span>Pipeline <span class="meta-value">Wazuh 4.10.0 + Claude API</span></span>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="label">Alerts Mapped</div>
+        <div class="value">${total}</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">E8 Coverage</div>
+        <div class="value" style="color:${e8.coverage_pct >= 75 ? 'var(--green)' : e8.coverage_pct >= 50 ? 'var(--yellow)' : 'var(--red)'}">${e8.coverage_pct}<span class="unit">%</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Controls Triggered</div>
+        <div class="value">${Object.keys(e8.controls_triggered).length}<span class="unit"> / 8</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Gaps Identified</div>
+        <div class="value" style="color:var(--red)">${e8.controls_not_triggered.length}</div>
+      </div>
+    </div>
+
+    <div class="main-grid">
+      <div class="panel">
+        <div class="panel-title"><span class="flag">🇦🇺</span> Essential Eight Coverage</div>
+        <div class="e8-grid">
+          ${[1,2,3,4,5,6,7,8].map(i => {
+            const id = 'E8-' + i;
+            const count = e8.controls_triggered[id] || 0;
+            const isActive = count > 0;
+            return `<div class="e8-cell ${isActive ? 'active' : 'gap'}">
+              <div class="id">${id}</div>
+              <div class="name">${e8Names[id]}</div>
+              <div class="count">${isActive ? count : '—'}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title">Alert Priority Distribution</div>
+        <div class="priority-list">
+          ${['CRITICAL','HIGH','MEDIUM','LOW'].map(p => {
+            const count = priorities[p] || 0;
+            const pct = maxPriority > 0 ? (count / maxPriority * 100) : 0;
+            const colors = {CRITICAL:'var(--red)',HIGH:'var(--orange)',MEDIUM:'var(--yellow)',LOW:'var(--green)'};
+            return `<div class="priority-item">
+              <div class="priority-label" style="color:${colors[p]}">${p}</div>
+              <div class="priority-bar-bg">
+                <div class="priority-bar" style="width:${pct}%;background:${colors[p]}20;color:${colors[p]}">${count > 0 ? count : ''}</div>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title"><span class="flag">🌐</span> NIST CSF v2 Subcategories</div>
+        <table class="framework-table">
+          <tr><th>Code</th><th>Subcategory</th><th>Function</th><th>Hits</th></tr>
+          ${Object.entries(summary.nist_csf_v2).map(([code, count]) => {
+            const ref = nistRef[code] || {name:code, fn:'—'};
+            return `<tr>
+              <td>${code}</td>
+              <td>${ref.name}</td>
+              <td><span class="func-tag func-${ref.fn}">${ref.fn}</span></td>
+              <td>${count}</td>
+            </tr>`;
+          }).join('')}
+        </table>
+      </div>
+
+      <div class="panel">
+        <div class="panel-title"><span class="flag">📋</span> ISO 27001:2022 Controls</div>
+        <table class="framework-table">
+          <tr><th>Control</th><th>Name</th><th>Hits</th></tr>
+          ${Object.entries(summary.iso_27001).map(([code, count]) => {
+            return `<tr>
+              <td>${code}</td>
+              <td>${code}</td>
+              <td>${count}</td>
+            </tr>`;
+          }).join('')}
+        </table>
+      </div>
+
+      <div class="panel full-width">
+        <div class="panel-title">Alert → Compliance Mapping Detail</div>
+        <table class="alert-table">
+          <tr><th>Priority</th><th>Rule</th><th>Description</th><th>E8 Controls</th></tr>
+          ${alerts.map(a => `<tr>
+            <td><span class="priority-badge priority-${a.priority}">${a.priority}</span></td>
+            <td style="font-family:'IBM Plex Mono',monospace;color:var(--text-muted);font-size:0.75rem">${a.rule_id}</td>
+            <td class="rule-desc">${a.rule_desc}</td>
+            <td><div class="e8-tags">${a.e8.map(e => `<span class="e8-tag">${e}</span>`).join('')}</div></td>
+          </tr>`).join('')}
+        </table>
+      </div>
+    </div>
+
+    <div class="footer">
+      Built with Wazuh SIEM + Claude API — <a href="https://github.com/kuipchan2/wazuh-agentic-homelab">github.com/kuipchan2/wazuh-agentic-homelab</a>
+    </div>
+  `;
+}
+
+// ── Init ─────────────────────────────────────────────
+render(defaultSummary, defaultAlerts);
+</script>
+</body>
+</html>
