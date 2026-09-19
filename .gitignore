@@ -1,5 +1,11 @@
+# Pipeline output — regenerable, may contain real host data
 evals/runs/
+phase3/triage_report.jsonl
+phase4/triage_report_v2.jsonl
+phase4/enrichment_report.jsonl
 phase5/compliance_report.jsonl
 phase5/compliance_summary.json
+
 __pycache__/
 *.pyc
+.env
