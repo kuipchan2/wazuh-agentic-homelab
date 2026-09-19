@@ -1,13 +1,5 @@
-# 敏感資料
-*.jsonl
-*.env
-.env
-
-# Python
+evals/runs/
+phase5/compliance_report.jsonl
+phase5/compliance_summary.json
 __pycache__/
 *.pyc
-*.pyo
-
-# API keys（永遠不要推上去）
-*secrets*
-*credentials*
