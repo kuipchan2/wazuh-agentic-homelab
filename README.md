@@ -131,8 +131,10 @@ Raw per-call output is retained in `evals/runs/` and can be re-analysed without
 further API calls via `--analyse`.
 
 A full Essential Eight maturity assessment of this environment — findings,
-accepted risks, evidence index and remediation roadmap — is in
-[docs/E8-maturity-assessment-report.md](docs/E8-maturity-assessment-report.md).
+accepted risks, evidence index, remediation roadmap and post-remediation
+verification — is in
+[docs/E8-maturity-assessment-report.md](docs/E8-maturity-assessment-report.md)
+(v1.1).
 
 ### Sample Output
 
