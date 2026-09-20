@@ -1,4 +1,4 @@
-# Essential Eight Maturity Assessment
+# Essential Eight Maturity Assessment and Security Configuration Review
 
 ## Wazuh Agentic Homelab — Development Endpoint
 
@@ -8,7 +8,7 @@
 
 | Field | Value |
 | --- | --- |
-| Document title | Essential Eight Maturity Assessment — Wazuh Agentic Homelab |
+| Document title | Essential Eight Maturity Assessment and Security Configuration Review — Wazuh Agentic Homelab |
 | Version | 1.0 |
 | Status | Final |
 | Classification | INTERNAL |
@@ -141,7 +141,23 @@ treated as part of the assessment rather than as a tooling matter, because the
 answer determines what weight the engine's output can carry in this and future
 reports.
 
-## 2.2 In scope
+## 2.2 Structure of this report
+
+Maturity ratings are made against the Essential Eight only. Four findings
+(F-006, F-008, F-009, F-010) fall outside the Essential Eight entirely and carry
+no maturity rating; they are mapped to CIS Ubuntu 24.04 and ISO/IEC 27001:2022
+in Appendix B and are identified as such at the point they appear.
+
+They are included rather than discarded because the evidence base supports them.
+The CIS benchmark executed for this assessment overlaps the Essential Eight only
+narrowly — of 125 failed checks, essentially only the privilege-management
+subset maps to any Essential Eight strategy. Reporting only the Essential Eight
+would discard the majority of what the evidence shows; forcing host firewall or
+audit logging findings into Essential Eight strategies would misrepresent a
+framework that does not address them. Both are recorded, each against the
+framework that actually covers it.
+
+## 2.3 In scope
 
 | Asset | Identifier | Basis for inclusion |
 | --- | --- | --- |
@@ -150,17 +166,17 @@ reports.
 
 Assessment covers the state of these assets during the assessment period only.
 
-## 2.3 Out of scope
+## 2.4 Out of scope
 
 | Excluded | Reason |
 | --- | --- |
 | Windows 11 parent host | Not instrumented; no agent deployed. Its firewall is relied upon as a compensating control under RA-002 and is unverified — see Section 8. |
-| Wazuh manager, indexer and dashboard containers (agent `000`) | Assessed platform, not assessed subject. SCA results retained as EV-011 to document the exclusion. |
+| Wazuh manager, indexer and dashboard containers (agent `000`) | Assessed platform, not assessed subject. Security Configuration Assessment (SCA) results retained as EV-011 to document the exclusion. |
 | Network infrastructure | No managed network devices in the environment. |
 | Agentic trading platform branch | Separate workload in a separate repository branch; no shared assets with the assessed pipeline. |
 | Third-party services (Anthropic API, AbuseIPDB) | Supplier assurance not performed. Their availability and integrity are assumed, not evidenced. |
 
-## 2.4 Applicability determinations
+## 2.5 Applicability determinations
 
 Two Essential Eight strategies are assessed as not applicable to this scope
 rather than as unmet:
@@ -174,7 +190,7 @@ Both would require rating if the endpoint's role changed to include user-facing
 applications. The distinction between *not applicable* and *ML0* is applied
 consistently throughout and materially affects the counts in Section 4.
 
-## 2.5 Environment characterisation
+## 2.6 Environment characterisation
 
 The assessed endpoint is a single-operator development and research environment.
 It holds no organisational or client data, supports no business process, and
@@ -206,7 +222,7 @@ out of eight is applied. See Section 4.1.
 
 | Source | What it establishes | What it cannot establish |
 | --- | --- | --- |
-| Wazuh SCA (CIS Ubuntu 24.04 Benchmark v1.0.0) | Configuration state of the host at scan time | Whether a configuration is maintained, or whether a process exists behind it |
+| Wazuh Security Configuration Assessment (SCA) module, running the CIS Ubuntu 24.04 Benchmark v1.0.0 | Configuration state of the host at scan time | Whether a configuration is maintained, or whether a process exists behind it |
 | Wazuh Vulnerability Detection | Known vulnerabilities in installed packages, with CVE publication dates | Exploitability in this environment; presence of compensating controls |
 | Direct host inspection (shell) | Presence or absence of specific files, packages and configuration | Operating effectiveness over time |
 | Repository and configuration review | How the environment is defined and deployed | Whether the deployment matches the definition |
@@ -249,7 +265,7 @@ misstate the model.
 ## 3.5 Risk rating
 
 Findings are rated using the likelihood and consequence definitions in
-Appendix C. Ratings reflect the environment as characterised in Section 2.5, not
+Appendix C. Ratings reflect the environment as characterised in Section 2.6, not
 a generic production context. Where a rating would differ materially on a
 production host, the finding says so explicitly rather than leaving the reader
 to infer it.
@@ -480,7 +496,7 @@ register (Section 6), not in an unexamined default.
 (`pam_google_authenticator`, `pam_u2f`, `pam_oath` all absent). Authentication
 is single-factor throughout.
 
-CIS SCA results show the password policy stack is also incomplete:
+SCA results against the CIS benchmark show the password policy stack is also incomplete:
 `libpam-pwquality` is not installed, and `pam_faillock`, `pam_pwquality` and
 `pam_pwhistory` are not enabled. Password expiry, minimum password age, history
 depth, and inactive-account lockout are all unconfigured.
@@ -542,7 +558,7 @@ decision should be recorded, not defaulted into.
 | Owner | Kui Pang Chan |
 | Target date | 19 November 2026 |
 
-**Observation.** CIS SCA identified the following failures in privilege
+**Observation.** SCA identified the following failures in privilege
 management:
 
 | Check | Title |
@@ -1534,7 +1550,7 @@ rather than relying on identifiers reproduced here.
 
 ## C.1 Likelihood
 
-Assessed for the environment characterised in Section 2.5 — a single-operator
+Assessed for the environment characterised in Section 2.6 — a single-operator
 development endpoint with no inbound internet exposure.
 
 | Level | Definition |
