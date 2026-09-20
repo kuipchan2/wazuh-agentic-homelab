@@ -17,7 +17,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 # ── 設定 ──────────────────────────────────────────
 INDEXER_URL   = "https://localhost:9200"
 INDEXER_USER  = "admin"
-INDEXER_PASS  = "SecretPassword"
+INDEXER_PASS  = os.getenv("INDEXER_PASS", "")
 ABUSEIPDB_KEY = os.getenv("ABUSEIPDB_KEY", "")
 REPORT_FILE   = "enrichment_report.jsonl"
 TRIAGE_FILE   = "../phase4/triage_report_v2.jsonl"

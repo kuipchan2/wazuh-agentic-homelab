@@ -4,6 +4,7 @@ Wazuh AI Triage Agent - Phase 3
 自動讀取 Wazuh alerts，用 LLM 分析威脅等級
 """
 
+import os
 import requests
 import json
 import time
@@ -17,10 +18,10 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 # ── 設定 ──────────────────────────────────────────
 WAZUH_URL  = "https://localhost:55000"
 WAZUH_USER = "wazuh-wui"
-WAZUH_PASS = "MyS3cr37P450r.*-"
+WAZUH_PASS = os.getenv("WAZUH_PASS", "")
 INDEXER_URL  = "https://localhost:9200"
 INDEXER_USER = "admin"
-INDEXER_PASS = "SecretPassword"
+INDEXER_PASS = os.getenv("INDEXER_PASS", "")
 POLL_INTERVAL = 30  # 每 30 秒檢查一次
 REPORT_FILE = "triage_report.jsonl"
 # ─────────────────────────────────────────────────

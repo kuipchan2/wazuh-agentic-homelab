@@ -4,6 +4,7 @@ Wazuh AI Triage Agent v2 - Phase 4
 改進版：加入 retry 邏輯、rate limiting、更穩定的錯誤處理
 """
 
+import os
 import requests
 import json
 import time
@@ -16,10 +17,10 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 # ── 設定 ──────────────────────────────────────────
 WAZUH_URL    = "https://localhost:55000"
 WAZUH_USER   = "wazuh-wui"
-WAZUH_PASS   = "MyS3cr37P450r.*-"
+WAZUH_PASS   = os.getenv("WAZUH_PASS", "")
 INDEXER_URL  = "https://localhost:9200"
 INDEXER_USER = "admin"
-INDEXER_PASS = "SecretPassword"
+INDEXER_PASS = os.getenv("INDEXER_PASS", "")
 POLL_INTERVAL   = 30   # 每 30 秒掃描一次
 MAX_RETRIES     = 3    # 最多重試 3 次
 RETRY_DELAY     = 5    # 每次重試等 5 秒
