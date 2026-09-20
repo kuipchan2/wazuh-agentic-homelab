@@ -30,7 +30,7 @@ from pathlib import Path
 # ── 設定 ──────────────────────────────────────────
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 MODEL = "claude-sonnet-4-6"
-MAX_TOKENS = 2000
+MAX_TOKENS = 4000
 DEFAULT_TEMPERATURE = 0.0  # 0 是為了 reproducibility；用 --temperature 改
 DEFAULT_INPUT = "../phase4/enrichment_report.jsonl"
 DEFAULT_OUTPUT = "compliance_report.jsonl"

@@ -14,9 +14,12 @@ output as audit evidence.
 NOTE: this measures CONSISTENCY, not CORRECTNESS. An engine that is
 reliably wrong scores perfectly here. See accuracy_spotcheck() below.
 
-Usage:
-    python3 consistency_eval.py --fixtures fixtures/golden_alerts.jsonl -k 5
-    python3 consistency_eval.py --analyse runs/2026-09-14T103000.jsonl
+Suggested sequence:
+    python3 consistency_eval.py --temperature 1.0 --label baseline
+    python3 consistency_eval.py --temperature 0.0 --label temp0
+    python3 consistency_eval.py --analyse runs/<file>.jsonl
+
+Place at evals/consistency_eval.py. Standard library only.
 """
 
 import argparse
@@ -34,61 +37,61 @@ from pathlib import Path
 # --------------------------------------------------------------------------
 
 THRESHOLDS = {
-    "high_relevance_set_agreement": 0.90,  # HIGH-relevance controls must be stable
+    "high_relevance_agreement": 0.90,   # HIGH-relevance controls must be stable
     "overall_mean_jaccard": 0.80,
     "max_relevance_drift": 0.10,
+    "max_priority_drift": 0.10,         # priority drives decisions — keep tight
 }
 
-FRAMEWORKS = ["essential_eight", "nist_csf", "iso_27001"]
+FRAMEWORKS = ["essential_eight", "nist_csf_v2", "iso_27001"]
 
 
 # ==========================================================================
-# ADAPTER — the only part you need to edit.
+# ADAPTER — wired to phase5/compliance_mapper.py
 # ==========================================================================
 
-def call_mapper(alert: dict) -> dict:
-    """Call your Phase 5 mapper once and return its raw result.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "phase5"))
 
-    Replace the body with a call into compliance_mapper.py, e.g.:
-
-        from phase5.compliance_mapper import map_alert
-        return map_alert(alert)
-
-    Keep the return value RAW — normalisation happens in normalise() so the
-    stored run file stays faithful to what the engine actually produced.
-    """
-    raise NotImplementedError(
-        "Wire call_mapper() to your compliance_mapper entry point."
+_IMPORT_ERROR = None
+try:
+    from compliance_mapper import (  # noqa: E402
+        load_controls, build_system_prompt, map_alert_to_compliance,
     )
+    _SYSTEM_PROMPT = build_system_prompt(load_controls())
+except ImportError as exc:  # allow --analyse without the mapper importable
+    _SYSTEM_PROMPT = None
+    _IMPORT_ERROR = exc
+
+
+def call_mapper(alert: dict, temperature: float) -> dict:
+    """One production-path call. The system prompt is built once so the eval
+    exercises the same prompt the pipeline uses."""
+    if _SYSTEM_PROMPT is None:
+        raise RuntimeError(f"compliance_mapper not importable: {_IMPORT_ERROR}")
+    return map_alert_to_compliance(alert, _SYSTEM_PROMPT, temperature)
 
 
 def normalise(raw: dict) -> dict:
     """Flatten the mapper's output into a canonical shape for comparison.
 
-    Target shape:
         {
-          "essential_eight": {"E8-2": "HIGH", "E8-6": "MEDIUM"},
-          "nist_csf":        {"ID.RA": "HIGH"},
-          "iso_27001":       {"A.8.8": "HIGH"},
+          "controls": {"essential_eight": {"E8-2": "HIGH"}, ...},
+          "priority": "HIGH",
         }
-
-    Relevance is upper-cased; frameworks absent from the output become {}.
-    Adjust the key lookups to match your engine's field names.
     """
-    out = {fw: {} for fw in FRAMEWORKS}
+    controls = {fw: {} for fw in FRAMEWORKS}
+    mappings = raw.get("mappings") or {}
     for fw in FRAMEWORKS:
-        entries = raw.get(fw) or raw.get(fw.replace("_", "")) or []
-        if isinstance(entries, dict):
-            entries = entries.get("controls", [])
-        for e in entries:
-            if isinstance(e, str):
-                out[fw][e] = "UNSPECIFIED"
-            else:
-                cid = e.get("control_id") or e.get("id") or e.get("control")
-                if cid:
-                    rel = (e.get("relevance") or "UNSPECIFIED").upper()
-                    out[fw][str(cid)] = rel
-    return out
+        for e in mappings.get(fw) or []:
+            if not isinstance(e, dict):
+                continue
+            cid = (e.get("control_id") or "").strip()
+            if cid:
+                controls[fw][cid] = (e.get("relevance") or "UNSPECIFIED").upper()
+    return {
+        "controls": controls,
+        "priority": (raw.get("priority") or "UNSPECIFIED").upper(),
+    }
 
 
 # ==========================================================================
@@ -102,7 +105,6 @@ def jaccard(a: set, b: set) -> float:
 
 
 def modal_set(sets: list) -> frozenset:
-    """The most frequently produced control set across K runs."""
     return Counter(frozenset(s) for s in sets).most_common(1)[0][0]
 
 
@@ -111,8 +113,21 @@ def analyse_alert(runs: list) -> dict:
     k = len(runs)
     result = {"k": k, "frameworks": {}}
 
+    # Priority drift — a single field that directly drives triage decisions.
+    # An alert that is sometimes CRITICAL and sometimes MEDIUM is a worse
+    # problem than an unstable control set.
+    priorities = [r["priority"] for r in runs]
+    p_counts = Counter(priorities)
+    modal_priority, modal_n = p_counts.most_common(1)[0]
+    result["priority"] = {
+        "modal": modal_priority,
+        "stability": round(modal_n / k, 3),
+        "distribution": dict(p_counts),
+        "drifted": len(p_counts) > 1,
+    }
+
     for fw in FRAMEWORKS:
-        sets = [set(r[fw].keys()) for r in runs]
+        sets = [set(r["controls"][fw].keys()) for r in runs]
         modal = modal_set(sets)
 
         # 1. Set agreement — how often the exact modal set reappeared
@@ -133,14 +148,14 @@ def analyse_alert(runs: list) -> dict:
         # 4. Relevance drift — did a control's HIGH/MEDIUM/LOW change?
         rel_by_control = defaultdict(set)
         for r in runs:
-            for cid, rel in r[fw].items():
+            for cid, rel in r["controls"][fw].items():
                 rel_by_control[cid].add(rel)
         drifted = [c for c, rels in rel_by_control.items() if len(rels) > 1]
         drift_rate = len(drifted) / len(rel_by_control) if rel_by_control else 0.0
 
-        # HIGH-relevance stability: controls rated HIGH in any run
         high_controls = {
-            cid for r in runs for cid, rel in r[fw].items() if rel == "HIGH"
+            cid for r in runs
+            for cid, rel in r["controls"][fw].items() if rel == "HIGH"
         }
         high_agreement = (
             statistics.mean(frequency.get(c, 0.0) for c in high_controls)
@@ -162,7 +177,6 @@ def analyse_alert(runs: list) -> dict:
 
 
 def aggregate(per_alert: dict) -> dict:
-    """Roll per-alert results up to per-framework and overall figures."""
     agg = {"frameworks": {}, "overall": {}}
     for fw in FRAMEWORKS:
         vals = [a["frameworks"][fw] for a in per_alert.values()]
@@ -178,24 +192,33 @@ def aggregate(per_alert: dict) -> dict:
         }
 
     all_fw = agg["frameworks"].values()
+    priority_drift = (
+        sum(1 for a in per_alert.values() if a["priority"]["drifted"])
+        / len(per_alert) if per_alert else 0.0
+    )
     agg["overall"] = {
-        "mean_jaccard": round(
-            statistics.mean(f["mean_jaccard"] for f in all_fw), 3),
+        "mean_jaccard": round(statistics.mean(f["mean_jaccard"] for f in all_fw), 3),
         "mean_high_relevance_agreement": round(
             statistics.mean(f["mean_high_relevance_agreement"] for f in all_fw), 3),
         "mean_relevance_drift": round(
             statistics.mean(f["mean_relevance_drift"] for f in all_fw), 3),
+        "priority_drift_rate": round(priority_drift, 3),
+        "mean_priority_stability": round(
+            statistics.mean(a["priority"]["stability"] for a in per_alert.values()), 3)
+        if per_alert else 1.0,
     }
 
     o = agg["overall"]
     agg["thresholds"] = THRESHOLDS
     agg["pass"] = {
-        "high_relevance_set_agreement":
-            o["mean_high_relevance_agreement"] >= THRESHOLDS["high_relevance_set_agreement"],
+        "high_relevance_agreement":
+            o["mean_high_relevance_agreement"] >= THRESHOLDS["high_relevance_agreement"],
         "overall_mean_jaccard":
             o["mean_jaccard"] >= THRESHOLDS["overall_mean_jaccard"],
         "max_relevance_drift":
             o["mean_relevance_drift"] <= THRESHOLDS["max_relevance_drift"],
+        "max_priority_drift":
+            o["priority_drift_rate"] <= THRESHOLDS["max_priority_drift"],
     }
     agg["pass"]["all"] = all(agg["pass"].values())
     return agg
@@ -208,8 +231,8 @@ def aggregate(per_alert: dict) -> dict:
 def accuracy_spotcheck(per_alert: dict, ground_truth_path: Path) -> dict:
     """Compare each alert's modal set against hand-written ground truth.
 
-    ground_truth.json:
-        {"alert_001": {"essential_eight": ["E8-2"], "iso_27001": ["A.8.8"]}, ...}
+    fixtures/ground_truth.json:
+        {"alert_001": {"essential_eight": ["E8-2"], "iso_27001": ["A.8.8"]}}
 
     Ten alerts is NOT statistically representative. Report it as a
     spot-check and say so in the Limitations section.
@@ -243,25 +266,30 @@ def accuracy_spotcheck(per_alert: dict, ground_truth_path: Path) -> dict:
 # RUN / REPORT
 # ==========================================================================
 
-def run(fixtures: Path, k: int, runs_dir: Path) -> Path:
+def run(fixtures: Path, k: int, temperature: float, label: str,
+        runs_dir: Path) -> Path:
     alerts = [json.loads(l) for l in fixtures.read_text().splitlines() if l.strip()]
     runs_dir.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H%M%SZ")
-    out_path = runs_dir / f"{stamp}.jsonl"
+    out_path = runs_dir / f"{stamp}-{label}.jsonl"
+
+    meta = {"_meta": True, "label": label, "temperature": temperature,
+            "k": k, "fixtures": str(fixtures), "started": stamp}
 
     with out_path.open("w") as fh:
+        fh.write(json.dumps(meta) + "\n")
         for alert in alerts:
             aid = alert.get("alert_id") or alert.get("id")
             for i in range(k):
                 try:
-                    raw = call_mapper(alert)
+                    raw = call_mapper(alert, temperature)
                     rec = {"alert_id": aid, "run": i, "ok": True, "raw": raw}
-                except Exception as exc:  # keep failures in the record
+                except Exception as exc:  # failures are evidence too
                     rec = {"alert_id": aid, "run": i, "ok": False,
                            "error": f"{type(exc).__name__}: {exc}"}
-                fh.write(json.dumps(rec) + "\n")
-                print(f"  {aid} run {i + 1}/{k} {'ok' if rec['ok'] else 'FAILED'}",
-                      file=sys.stderr)
+                fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
+                print(f"  {aid} run {i + 1}/{k} "
+                      f"{'ok' if rec['ok'] else 'FAILED'}", file=sys.stderr)
 
     print(f"\nRaw runs written to {out_path}", file=sys.stderr)
     return out_path
@@ -270,10 +298,15 @@ def run(fixtures: Path, k: int, runs_dir: Path) -> Path:
 def analyse(run_path: Path, out_dir: Path) -> dict:
     by_alert = defaultdict(list)
     failures = 0
+    meta = {}
+
     for line in run_path.read_text().splitlines():
         if not line.strip():
             continue
         rec = json.loads(line)
+        if rec.get("_meta"):
+            meta = rec
+            continue
         if rec.get("ok"):
             by_alert[rec["alert_id"]].append(normalise(rec["raw"]))
         else:
@@ -282,6 +315,7 @@ def analyse(run_path: Path, out_dir: Path) -> dict:
     per_alert = {aid: analyse_alert(runs) for aid, runs in by_alert.items()}
     report = {
         "source_run": run_path.name,
+        "run_meta": meta,
         "generated": datetime.now(timezone.utc).isoformat(),
         "n_alerts": len(per_alert),
         "failed_calls": failures,
@@ -293,7 +327,8 @@ def analyse(run_path: Path, out_dir: Path) -> dict:
     )
 
     out_dir.mkdir(parents=True, exist_ok=True)
-    (out_dir / "consistency_report.json").write_text(json.dumps(report, indent=2))
+    (out_dir / "consistency_report.json").write_text(
+        json.dumps(report, indent=2, ensure_ascii=False))
     (out_dir / "CONSISTENCY.md").write_text(render_markdown(report))
     print(f"Report written to {out_dir}/consistency_report.json", file=sys.stderr)
     return report
@@ -301,10 +336,14 @@ def analyse(run_path: Path, out_dir: Path) -> dict:
 
 def render_markdown(r: dict) -> str:
     verdict = "PASS" if r["pass"]["all"] else "FAIL"
+    meta = r.get("run_meta", {})
+    o = r["overall"]
     lines = [
         "# Compliance Mapping Consistency Evaluation",
         "",
         f"- Source run: `{r['source_run']}`",
+        f"- Label: {meta.get('label', 'n/a')} | temperature: "
+        f"{meta.get('temperature', 'n/a')} | K: {meta.get('k', 'n/a')}",
         f"- Generated: {r['generated']}",
         f"- Alerts: {r['n_alerts']} | Failed calls: {r['failed_calls']}",
         f"- **Result: {verdict}**",
@@ -314,14 +353,15 @@ def render_markdown(r: dict) -> str:
         "| Criterion | Threshold | Observed | Result |",
         "| --- | --- | --- | --- |",
     ]
-    o = r["overall"]
     rows = [
-        ("HIGH-relevance agreement", THRESHOLDS["high_relevance_set_agreement"],
-         o["mean_high_relevance_agreement"], r["pass"]["high_relevance_set_agreement"]),
+        ("HIGH-relevance agreement", THRESHOLDS["high_relevance_agreement"],
+         o["mean_high_relevance_agreement"], r["pass"]["high_relevance_agreement"]),
         ("Mean pairwise Jaccard", THRESHOLDS["overall_mean_jaccard"],
          o["mean_jaccard"], r["pass"]["overall_mean_jaccard"]),
         ("Relevance drift (max)", THRESHOLDS["max_relevance_drift"],
          o["mean_relevance_drift"], r["pass"]["max_relevance_drift"]),
+        ("Priority drift (max)", THRESHOLDS["max_priority_drift"],
+         o["priority_drift_rate"], r["pass"]["max_priority_drift"]),
     ]
     for name, thr, obs, ok in rows:
         lines.append(f"| {name} | {thr} | {obs} | {'PASS' if ok else 'FAIL'} |")
@@ -335,17 +375,30 @@ def render_markdown(r: dict) -> str:
             f"{v['mean_high_relevance_agreement']} | {v['mean_relevance_drift']} |"
         )
 
+    lines += ["", "## Priority stability", "",
+              f"- Mean modal stability: {o['mean_priority_stability']}",
+              f"- Alerts with any priority drift: {o['priority_drift_rate']}",
+              "",
+              "| Alert | Modal | Stability | Distribution |",
+              "| --- | --- | --- | --- |"]
+    for aid, a in r["per_alert"].items():
+        p = a["priority"]
+        lines.append(f"| {aid} | {p['modal']} | {p['stability']} | "
+                     f"{json.dumps(p['distribution'])} |")
+
     lines += [
         "",
         "## Limitations",
         "",
         "- Measures consistency, not correctness. A reliably incorrect mapping",
         "  scores perfectly on every metric above.",
-        "- Temperature=0 reduces but does not eliminate variation in LLM output.",
+        "- temperature=0 reduces but does not eliminate variation in LLM output.",
         "- Fixture corpus is small and hand-selected; results do not generalise",
         "  to the full alert population.",
         "- Accuracy figures, where present, are a spot-check against hand-written",
         "  ground truth and are not statistically representative.",
+        "- Scope is the mapping engine only. Nothing here evidences whether any",
+        "  Essential Eight control is implemented.",
         "",
     ]
     return "\n".join(lines)
@@ -353,14 +406,18 @@ def render_markdown(r: dict) -> str:
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument("--fixtures", type=Path, default=Path("fixtures/golden_alerts.jsonl"))
+    p.add_argument("--fixtures", type=Path,
+                   default=Path(__file__).parent / "fixtures" / "golden_alerts.jsonl")
     p.add_argument("-k", type=int, default=5, help="runs per alert")
-    p.add_argument("--runs-dir", type=Path, default=Path("runs"))
-    p.add_argument("--out-dir", type=Path, default=Path("."))
+    p.add_argument("--temperature", type=float, default=0.0)
+    p.add_argument("--label", default="run", help="tag for this run file")
+    p.add_argument("--runs-dir", type=Path, default=Path(__file__).parent / "runs")
+    p.add_argument("--out-dir", type=Path, default=Path(__file__).parent)
     p.add_argument("--analyse", type=Path, help="analyse an existing run file only")
     args = p.parse_args()
 
-    run_path = args.analyse or run(args.fixtures, args.k, args.runs_dir)
+    run_path = args.analyse or run(
+        args.fixtures, args.k, args.temperature, args.label, args.runs_dir)
     report = analyse(run_path, args.out_dir)
     sys.exit(0 if report["pass"]["all"] else 1)
 

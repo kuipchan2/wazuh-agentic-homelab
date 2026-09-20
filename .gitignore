@@ -9,3 +9,4 @@ phase5/compliance_summary.json
 __pycache__/
 *.pyc
 .env
+evals/consistency_report-baseline.json
