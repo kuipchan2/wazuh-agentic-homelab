@@ -57,7 +57,7 @@ For each mapping, the engine provides:
 - **Justification** specific to the alert, not generic
 - **Actionable remediation** tailored to the detected threat
 - **Executive risk summary** written for non-technical stakeholders
-- **Compliance posture report** identifying Essential Eight coverage gaps
+- **Detection coverage report** showing which Essential Eight mitigation strategies were exercised by observed alerts
 
 ### Sample Output
 
@@ -82,10 +82,18 @@ For each mapping, the engine provides:
 
 📊 COMPLIANCE POSTURE SUMMARY
    Alerts Mapped: 5
-   🇦🇺 Essential Eight Coverage: 62.5%
+   🇦🇺 Essential Eight   Detection coverage: 62.5%
       ✅ E8-2, E8-4, E8-5, E8-6, E8-7: triggered
-      ⬜ E8-1, E8-3, E8-8: gaps identified
+      ⬜ E8-1, E8-3, E8-8: not observed in this sample
 ```
+> **What this metric is not.** Detection coverage measures the proportion of
+> the eight mitigation strategies touched by at least one observed alert. It
+> does **not** measure whether those controls are implemented. A strategy
+> absent from the list means *not observed in this sample*, not *non-compliant* —
+> and coverage rises as an environment is attacked more, not as it becomes
+> more secure. Assessing implementation requires configuration evidence
+> (e.g. Wazuh SCA) and maturity level scoring against the ASD Essential Eight
+> Maturity Model (ML0–ML3), which this pipeline does not currently collect.
 
 ## Stack
 
@@ -111,7 +119,7 @@ wazuh-agentic/
 │   ├── compliance_mapper.py      # multi-framework compliance mapping
 │   ├── compliance_controls.json  # E8 + NIST + ISO reference data
 │   ├── compliance_report.jsonl   # per-alert compliance mappings
-│   └── compliance_summary.json   # posture summary with gap analysis
+│   └── compliance_summary.json   # detection coverage summary
 └── tests/
     └── test_triage_agent.py
 ```
