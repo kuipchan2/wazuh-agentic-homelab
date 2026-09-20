@@ -1,0 +1,793 @@
+{
+  "source_run": "2026-09-19T170617Z-temp0.jsonl",
+  "run_meta": {
+    "_meta": true,
+    "label": "temp0",
+    "temperature": 0.0,
+    "k": 5,
+    "fixtures": "/home/kuipchan2/wazuh-agentic/evals/fixtures/golden_alerts.jsonl",
+    "started": "2026-09-19T170617Z"
+  },
+  "generated": "2026-09-20T01:13:10.429582+00:00",
+  "n_alerts": 10,
+  "failed_calls": 0,
+  "per_alert": {
+    "alert_001": {
+      "k": 5,
+      "frameworks": {
+        "essential_eight": {
+          "set_agreement": 0.8,
+          "mean_pairwise_jaccard": 0.867,
+          "high_relevance_agreement": 1.0,
+          "relevance_drift_rate": 0.0,
+          "drifted_controls": [],
+          "stable_core": [
+            "E8-5",
+            "E8-7"
+          ],
+          "edge_noise": [
+            "E8-6"
+          ],
+          "modal_set": [
+            "E8-5",
+            "E8-6",
+            "E8-7"
+          ]
+        },
+        "nist_csf_v2": {
+          "set_agreement": 1.0,
+          "mean_pairwise_jaccard": 1.0,
+          "high_relevance_agreement": 1.0,
+          "relevance_drift_rate": 0.333,
+          "drifted_controls": [
+            "RS.MI"
+          ],
+          "stable_core": [
+            "DE.CM",
+            "PR.AA",
+            "RS.MI"
+          ],
+          "edge_noise": [],
+          "modal_set": [
+            "DE.CM",
+            "PR.AA",
+            "RS.MI"
+          ]
+        },
+        "iso_27001": {
+          "set_agreement": 0.8,
+          "mean_pairwise_jaccard": 0.8,
+          "high_relevance_agreement": 0.933,
+          "relevance_drift_rate": 0.25,
+          "drifted_controls": [
+            "A.5.7"
+          ],
+          "stable_core": [
+            "A.5.7",
+            "A.8.5"
+          ],
+          "edge_noise": [
+            "A.8.16",
+            "A.8.20"
+          ],
+          "modal_set": [
+            "A.5.7",
+            "A.8.16",
+            "A.8.5"
+          ]
+        }
+      },
+      "priority": {
+        "modal": "HIGH",
+        "stability": 1.0,
+        "distribution": {
+          "HIGH": 5
+        },
+        "drifted": false
+      }
+    },
+    "alert_002": {
+      "k": 5,
+      "frameworks": {
+        "essential_eight": {
+          "set_agreement": 1.0,
+          "mean_pairwise_jaccard": 1.0,
+          "high_relevance_agreement": 1.0,
+          "relevance_drift_rate": 0.0,
+          "drifted_controls": [],
+          "stable_core": [
+            "E8-2",
+            "E8-5",
+            "E8-6"
+          ],
+          "edge_noise": [],
+          "modal_set": [
+            "E8-2",
+            "E8-5",
+            "E8-6"
+          ]
+        },
+        "nist_csf_v2": {
+          "set_agreement": 0.6,
+          "mean_pairwise_jaccard": 0.7,
+          "high_relevance_agreement": 0.8,
+          "relevance_drift_rate": 0.25,
+          "drifted_controls": [
+            "DE.CM"
+          ],
+          "stable_core": [
+            "DE.CM",
+            "ID.RA"
+          ],
+          "edge_noise": [
+            "PR.PS",
+            "RS.MI"
+          ],
+          "modal_set": [
+            "DE.CM",
+            "ID.RA",
+            "RS.MI"
+          ]
+        },
+        "iso_27001": {
+          "set_agreement": 1.0,
+          "mean_pairwise_jaccard": 1.0,
+          "high_relevance_agreement": 1.0,
+          "relevance_drift_rate": 0.0,
+          "drifted_controls": [],
+          "stable_core": [
+            "A.5.7",
+            "A.8.16",
+            "A.8.8"
+          ],
+          "edge_noise": [],
+          "modal_set": [
+            "A.5.7",
+            "A.8.16",
+            "A.8.8"
+          ]
+        }
+      },
+      "priority": {
+        "modal": "CRITICAL",
+        "stability": 1.0,
+        "distribution": {
+          "CRITICAL": 5
+        },
+        "drifted": false
+      }
+    },
+    "alert_003": {
+      "k": 5,
+      "frameworks": {
+        "essential_eight": {
+          "set_agreement": 1.0,
+          "mean_pairwise_jaccard": 1.0,
+          "high_relevance_agreement": 1.0,
+          "relevance_drift_rate": 0.333,
+          "drifted_controls": [
+            "E8-5"
+          ],
+          "stable_core": [
+            "E8-1",
+            "E8-5",
+            "E8-8"
+          ],
+          "edge_noise": [],
+          "modal_set": [
+            "E8-1",
+            "E8-5",
+            "E8-8"
+          ]
+        },
+        "nist_csf_v2": {
+          "set_agreement": 0.6,
+          "mean_pairwise_jaccard": 0.52,
+          "high_relevance_agreement": 0.6,
+          "relevance_drift_rate": 0.2,
+          "drifted_controls": [
+            "RS.AN"
+          ],
+          "stable_core": [
+            "RS.MI"
+          ],
+          "edge_noise": [
+            "DE.AE",
+            "DE.CM",
+            "RC.RP",
+            "RS.AN"
+          ],
+          "modal_set": [
+            "DE.AE",
+            "RC.RP",
+            "RS.MI"
+          ]
+        },
+        "iso_27001": {
+          "set_agreement": 0.6,
+          "mean_pairwise_jaccard": 0.7,
+          "high_relevance_agreement": 0.75,
+          "relevance_drift_rate": 0.5,
+          "drifted_controls": [
+            "A.8.16",
+            "A.8.7"
+          ],
+          "stable_core": [
+            "A.5.26",
+            "A.8.13"
+          ],
+          "edge_noise": [
+            "A.8.16",
+            "A.8.7"
+          ],
+          "modal_set": [
+            "A.5.26",
+            "A.8.13",
+            "A.8.16"
+          ]
+        }
+      },
+      "priority": {
+        "modal": "CRITICAL",
+        "stability": 1.0,
+        "distribution": {
+          "CRITICAL": 5
+        },
+        "drifted": false
+      }
+    },
+    "alert_004": {
+      "k": 5,
+      "frameworks": {
+        "essential_eight": {
+          "set_agreement": 0.6,
+          "mean_pairwise_jaccard": 0.8,
+          "high_relevance_agreement": 1.0,
+          "relevance_drift_rate": 0.0,
+          "drifted_controls": [],
+          "stable_core": [
+            "E8-5",
+            "E8-7"
+          ],
+          "edge_noise": [
+            "E8-1"
+          ],
+          "modal_set": [
+            "E8-5",
+            "E8-7"
+          ]
+        },
+        "nist_csf_v2": {
+          "set_agreement": 1.0,
+          "mean_pairwise_jaccard": 1.0,
+          "high_relevance_agreement": 1.0,
+          "relevance_drift_rate": 0.0,
+          "drifted_controls": [],
+          "stable_core": [
+            "DE.CM",
+            "PR.AA",
+            "RS.MA"
+          ],
+          "edge_noise": [],
+          "modal_set": [
+            "DE.CM",
+            "PR.AA",
+            "RS.MA"
+          ]
+        },
+        "iso_27001": {
+          "set_agreement": 1.0,
+          "mean_pairwise_jaccard": 1.0,
+          "high_relevance_agreement": 1.0,
+          "relevance_drift_rate": 0.0,
+          "drifted_controls": [],
+          "stable_core": [
+            "A.5.25",
+            "A.8.15",
+            "A.8.2"
+          ],
+          "edge_noise": [],
+          "modal_set": [
+            "A.5.25",
+            "A.8.15",
+            "A.8.2"
+          ]
+        }
+      },
+      "priority": {
+        "modal": "HIGH",
+        "stability": 1.0,
+        "distribution": {
+          "HIGH": 5
+        },
+        "drifted": false
+      }
+    },
+    "alert_005": {
+      "k": 5,
+      "frameworks": {
+        "essential_eight": {
+          "set_agreement": 1.0,
+          "mean_pairwise_jaccard": 1.0,
+          "high_relevance_agreement": 1.0,
+          "relevance_drift_rate": 0.0,
+          "drifted_controls": [],
+          "stable_core": [
+            "E8-2",
+            "E8-4",
+            "E8-5"
+          ],
+          "edge_noise": [],
+          "modal_set": [
+            "E8-2",
+            "E8-4",
+            "E8-5"
+          ]
+        },
+        "nist_csf_v2": {
+          "set_agreement": 1.0,
+          "mean_pairwise_jaccard": 1.0,
+          "high_relevance_agreement": 1.0,
+          "relevance_drift_rate": 0.333,
+          "drifted_controls": [
+            "DE.AE"
+          ],
+          "stable_core": [
+            "DE.AE",
+            "DE.CM",
+            "RS.MI"
+          ],
+          "edge_noise": [],
+          "modal_set": [
+            "DE.AE",
+            "DE.CM",
+            "RS.MI"
+          ]
+        },
+        "iso_27001": {
+          "set_agreement": 0.4,
+          "mean_pairwise_jaccard": 0.6,
+          "high_relevance_agreement": 0.5,
+          "relevance_drift_rate": 0.0,
+          "drifted_controls": [],
+          "stable_core": [
+            "A.5.7",
+            "A.8.16"
+          ],
+          "edge_noise": [
+            "A.8.20",
+            "A.8.23",
+            "A.8.8"
+          ],
+          "modal_set": [
+            "A.5.7",
+            "A.8.16",
+            "A.8.20"
+          ]
+        }
+      },
+      "priority": {
+        "modal": "HIGH",
+        "stability": 1.0,
+        "distribution": {
+          "HIGH": 5
+        },
+        "drifted": false
+      }
+    },
+    "alert_006": {
+      "k": 5,
+      "frameworks": {
+        "essential_eight": {
+          "set_agreement": 1.0,
+          "mean_pairwise_jaccard": 1.0,
+          "high_relevance_agreement": 1.0,
+          "relevance_drift_rate": 0.0,
+          "drifted_controls": [],
+          "stable_core": [
+            "E8-1",
+            "E8-5",
+            "E8-7"
+          ],
+          "edge_noise": [],
+          "modal_set": [
+            "E8-1",
+            "E8-5",
+            "E8-7"
+          ]
+        },
+        "nist_csf_v2": {
+          "set_agreement": 0.6,
+          "mean_pairwise_jaccard": 0.56,
+          "high_relevance_agreement": 0.6,
+          "relevance_drift_rate": 0.2,
+          "drifted_controls": [
+            "DE.AE"
+          ],
+          "stable_core": [
+            "DE.CM"
+          ],
+          "edge_noise": [
+            "DE.AE",
+            "PR.PS",
+            "RS.MA",
+            "RS.MI"
+          ],
+          "modal_set": [
+            "DE.AE",
+            "DE.CM",
+            "RS.MI"
+          ]
+        },
+        "iso_27001": {
+          "set_agreement": 0.8,
+          "mean_pairwise_jaccard": 0.68,
+          "high_relevance_agreement": 0.667,
+          "relevance_drift_rate": 0.0,
+          "drifted_controls": [],
+          "stable_core": [
+            "A.8.7"
+          ],
+          "edge_noise": [
+            "A.5.26",
+            "A.5.28",
+            "A.8.15",
+            "A.8.9"
+          ],
+          "modal_set": [
+            "A.5.26",
+            "A.8.15",
+            "A.8.7"
+          ]
+        }
+      },
+      "priority": {
+        "modal": "HIGH",
+        "stability": 0.6,
+        "distribution": {
+          "CRITICAL": 2,
+          "HIGH": 3
+        },
+        "drifted": true
+      }
+    },
+    "alert_007": {
+      "k": 5,
+      "frameworks": {
+        "essential_eight": {
+          "set_agreement": 0.8,
+          "mean_pairwise_jaccard": 0.8,
+          "high_relevance_agreement": 1.0,
+          "relevance_drift_rate": 0.0,
+          "drifted_controls": [],
+          "stable_core": [
+            "E8-5",
+            "E8-7"
+          ],
+          "edge_noise": [
+            "E8-1",
+            "E8-6"
+          ],
+          "modal_set": [
+            "E8-1",
+            "E8-5",
+            "E8-7"
+          ]
+        },
+        "nist_csf_v2": {
+          "set_agreement": 0.4,
+          "mean_pairwise_jaccard": 0.4,
+          "high_relevance_agreement": 0.5,
+          "relevance_drift_rate": 0.167,
+          "drifted_controls": [
+            "DE.AE"
+          ],
+          "stable_core": [
+            "DE.CM"
+          ],
+          "edge_noise": [
+            "DE.AE",
+            "PR.AA",
+            "RS.AN",
+            "RS.MA",
+            "RS.MI"
+          ],
+          "modal_set": [
+            "DE.AE",
+            "DE.CM",
+            "RS.MI"
+          ]
+        },
+        "iso_27001": {
+          "set_agreement": 0.6,
+          "mean_pairwise_jaccard": 0.65,
+          "high_relevance_agreement": 1.0,
+          "relevance_drift_rate": 0.0,
+          "drifted_controls": [],
+          "stable_core": [
+            "A.8.16",
+            "A.8.5"
+          ],
+          "edge_noise": [
+            "A.5.25",
+            "A.5.26",
+            "A.5.28"
+          ],
+          "modal_set": [
+            "A.5.28",
+            "A.8.16",
+            "A.8.5"
+          ]
+        }
+      },
+      "priority": {
+        "modal": "CRITICAL",
+        "stability": 1.0,
+        "distribution": {
+          "CRITICAL": 5
+        },
+        "drifted": false
+      }
+    },
+    "alert_008": {
+      "k": 5,
+      "frameworks": {
+        "essential_eight": {
+          "set_agreement": 1.0,
+          "mean_pairwise_jaccard": 1.0,
+          "high_relevance_agreement": 1.0,
+          "relevance_drift_rate": 0.0,
+          "drifted_controls": [],
+          "stable_core": [
+            "E8-1",
+            "E8-5"
+          ],
+          "edge_noise": [],
+          "modal_set": [
+            "E8-1",
+            "E8-5"
+          ]
+        },
+        "nist_csf_v2": {
+          "set_agreement": 0.6,
+          "mean_pairwise_jaccard": 0.7,
+          "high_relevance_agreement": 1.0,
+          "relevance_drift_rate": 0.0,
+          "drifted_controls": [],
+          "stable_core": [
+            "DE.AE",
+            "DE.CM"
+          ],
+          "edge_noise": [
+            "RS.MA",
+            "RS.MI"
+          ],
+          "modal_set": [
+            "DE.AE",
+            "DE.CM",
+            "RS.MA"
+          ]
+        },
+        "iso_27001": {
+          "set_agreement": 0.6,
+          "mean_pairwise_jaccard": 0.65,
+          "high_relevance_agreement": 0.867,
+          "relevance_drift_rate": 0.5,
+          "drifted_controls": [
+            "A.8.20",
+            "A.8.9"
+          ],
+          "stable_core": [
+            "A.8.16"
+          ],
+          "edge_noise": [
+            "A.5.25",
+            "A.8.20",
+            "A.8.9"
+          ],
+          "modal_set": [
+            "A.8.16",
+            "A.8.20",
+            "A.8.9"
+          ]
+        }
+      },
+      "priority": {
+        "modal": "HIGH",
+        "stability": 1.0,
+        "distribution": {
+          "HIGH": 5
+        },
+        "drifted": false
+      }
+    },
+    "alert_009": {
+      "k": 5,
+      "frameworks": {
+        "essential_eight": {
+          "set_agreement": 1.0,
+          "mean_pairwise_jaccard": 1.0,
+          "high_relevance_agreement": 1.0,
+          "relevance_drift_rate": 0.0,
+          "drifted_controls": [],
+          "stable_core": [],
+          "edge_noise": [],
+          "modal_set": []
+        },
+        "nist_csf_v2": {
+          "set_agreement": 1.0,
+          "mean_pairwise_jaccard": 1.0,
+          "high_relevance_agreement": 1.0,
+          "relevance_drift_rate": 0.0,
+          "drifted_controls": [],
+          "stable_core": [
+            "DE.AE",
+            "DE.CM"
+          ],
+          "edge_noise": [],
+          "modal_set": [
+            "DE.AE",
+            "DE.CM"
+          ]
+        },
+        "iso_27001": {
+          "set_agreement": 0.6,
+          "mean_pairwise_jaccard": 0.667,
+          "high_relevance_agreement": 1.0,
+          "relevance_drift_rate": 0.667,
+          "drifted_controls": [
+            "A.5.25",
+            "A.8.15"
+          ],
+          "stable_core": [
+            "A.8.15"
+          ],
+          "edge_noise": [
+            "A.5.25",
+            "A.8.16"
+          ],
+          "modal_set": [
+            "A.5.25",
+            "A.8.15"
+          ]
+        }
+      },
+      "priority": {
+        "modal": "LOW",
+        "stability": 1.0,
+        "distribution": {
+          "LOW": 5
+        },
+        "drifted": false
+      }
+    },
+    "alert_010": {
+      "k": 5,
+      "frameworks": {
+        "essential_eight": {
+          "set_agreement": 0.8,
+          "mean_pairwise_jaccard": 0.8,
+          "high_relevance_agreement": 1.0,
+          "relevance_drift_rate": 0.25,
+          "drifted_controls": [
+            "E8-2"
+          ],
+          "stable_core": [
+            "E8-2",
+            "E8-7"
+          ],
+          "edge_noise": [
+            "E8-4",
+            "E8-5"
+          ],
+          "modal_set": [
+            "E8-2",
+            "E8-4",
+            "E8-7"
+          ]
+        },
+        "nist_csf_v2": {
+          "set_agreement": 1.0,
+          "mean_pairwise_jaccard": 1.0,
+          "high_relevance_agreement": 1.0,
+          "relevance_drift_rate": 0.333,
+          "drifted_controls": [
+            "PR.AA"
+          ],
+          "stable_core": [
+            "DE.CM",
+            "PR.AA",
+            "RS.MI"
+          ],
+          "edge_noise": [],
+          "modal_set": [
+            "DE.CM",
+            "PR.AA",
+            "RS.MI"
+          ]
+        },
+        "iso_27001": {
+          "set_agreement": 0.6,
+          "mean_pairwise_jaccard": 0.7,
+          "high_relevance_agreement": 0.75,
+          "relevance_drift_rate": 0.5,
+          "drifted_controls": [
+            "A.5.7",
+            "A.8.23"
+          ],
+          "stable_core": [
+            "A.5.7",
+            "A.8.16"
+          ],
+          "edge_noise": [
+            "A.8.23",
+            "A.8.5"
+          ],
+          "modal_set": [
+            "A.5.7",
+            "A.8.16",
+            "A.8.23"
+          ]
+        }
+      },
+      "priority": {
+        "modal": "HIGH",
+        "stability": 1.0,
+        "distribution": {
+          "HIGH": 5
+        },
+        "drifted": false
+      }
+    }
+  },
+  "frameworks": {
+    "essential_eight": {
+      "mean_set_agreement": 0.9,
+      "mean_jaccard": 0.927,
+      "mean_high_relevance_agreement": 1.0,
+      "mean_relevance_drift": 0.058
+    },
+    "nist_csf_v2": {
+      "mean_set_agreement": 0.78,
+      "mean_jaccard": 0.788,
+      "mean_high_relevance_agreement": 0.85,
+      "mean_relevance_drift": 0.182
+    },
+    "iso_27001": {
+      "mean_set_agreement": 0.7,
+      "mean_jaccard": 0.745,
+      "mean_high_relevance_agreement": 0.847,
+      "mean_relevance_drift": 0.242
+    }
+  },
+  "overall": {
+    "mean_jaccard": 0.82,
+    "mean_high_relevance_agreement": 0.899,
+    "mean_relevance_drift": 0.161,
+    "priority_drift_rate": 0.1,
+    "mean_priority_stability": 0.96
+  },
+  "thresholds": {
+    "high_relevance_agreement": 0.9,
+    "overall_mean_jaccard": 0.8,
+    "max_relevance_drift": 0.1,
+    "max_priority_drift": 0.1
+  },
+  "pass": {
+    "high_relevance_agreement": false,
+    "overall_mean_jaccard": true,
+    "max_relevance_drift": false,
+    "max_priority_drift": true,
+    "all": false
+  },
+  "accuracy_spotcheck": {
+    "status": "completed",
+    "n_alerts": 10,
+    "caveat": "Spot-check only; sample too small to be representative.",
+    "mean_jaccard_vs_ground_truth": {
+      "essential_eight": 0.385,
+      "nist_csf_v2": 0.315,
+      "iso_27001": 0.2
+    }
+  }
+}

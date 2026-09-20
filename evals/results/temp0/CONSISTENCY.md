@@ -2,7 +2,7 @@
 
 - Source run: `2026-09-19T170617Z-temp0.jsonl`
 - Label: temp0 | temperature: 0.0 | K: 5
-- Generated: 2026-09-20T01:10:09.862971+00:00
+- Generated: 2026-09-20T01:13:10.429582+00:00
 - Alerts: 10 | Failed calls: 0
 - **Result: FAIL**
 
