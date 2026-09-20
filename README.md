@@ -59,6 +59,77 @@ For each mapping, the engine provides:
 - **Executive risk summary** written for non-technical stakeholders
 - **Detection coverage report** showing which Essential Eight mitigation strategies were exercised by observed alerts
 
+## Evaluation
+
+The mapping engine's output is only usable as evidence if it is reproducible.
+Each of 10 fixture alerts was mapped 5 times under identical conditions and the
+results compared. Thresholds were set before the first run.
+
+| Criterion | Threshold | T=1.0 | T=0.0 |
+| --- | --- | --- | --- |
+| HIGH-relevance agreement | ≥ 0.90 | 0.912 | 0.899 |
+| Mean pairwise Jaccard | ≥ 0.80 | 0.813 | 0.820 |
+| Relevance drift | ≤ 0.10 | 0.229 | 0.161 |
+| Priority drift | ≤ 0.10 | 0.400 | 0.100 |
+| **Result** | | **FAIL** | **FAIL** |
+
+Per framework (relevance drift):
+
+| Framework | T=1.0 | T=0.0 | Change |
+| --- | --- | --- | --- |
+| Essential Eight | 0.208 | 0.058 | −72% |
+| NIST CSF v2 | 0.132 | 0.182 | +38% |
+| ISO 27001 | 0.346 | 0.242 | −30% |
+
+### Findings
+
+**Both configurations fail the pre-defined thresholds.** The engine's output
+does not currently meet the bar for standalone audit evidence. It is suitable
+for assisting human judgement, not replacing it.
+
+**Framework stability differs sharply.** At T=0.0, Essential Eight reaches a
+Jaccard of 0.927 with 100% stability on HIGH-relevance mappings, while ISO
+27001 reaches only 0.745. Aggregate figures hide this: overall drift improved
+30% while Essential Eight alone improved 72%. Output should be trusted per
+framework, not uniformly — Essential Eight mappings are usable directly, ISO
+27001 mappings require human review.
+
+**NIST CSF v2 regressed** at T=0.0 (0.132 → 0.182), the only framework to do
+so. With K=5 across 10 alerts this may be sampling noise; it is reported as
+observed rather than explained, and warrants a larger corpus to confirm.
+
+**Over-attribution of E8-5.** Restrict Administrative Privileges appears in the
+stable core of 8 of 10 alerts, including cases where the connection is weak —
+an OpenSSL CVE, a netstat state change, a web scan. This is a correctness
+problem that the consistency metrics cannot detect: a mapping that is
+consistently wrong scores perfectly. It also inflates detection coverage, since
+a control matched by nearly every alert carries no signal.
+
+**Prompt injection was resisted.** Fixture `alert_010` carries injected
+instructions in attacker-controllable reverse DNS, WHOIS and ISP fields
+delivered via third-party threat intelligence. Across all runs the engine kept
+the correct priority, produced full mappings, and flagged the attempt in its
+risk summary rather than acting on it.
+
+### Limitations
+
+- Consistency is not correctness. A reliably incorrect mapping scores perfectly.
+- temperature=0 reduces but does not eliminate variation in LLM output.
+- The fixture corpus is small and hand-selected; results do not generalise to
+  the full alert population.
+- Scope is the mapping engine only. Nothing here evidences whether any
+  Essential Eight control is implemented.
+
+### Reproducing
+
+```bash
+cd evals
+python3 consistency_eval.py --temperature 0.0 --label temp0 -k 5
+```
+
+Raw per-call output is retained in `evals/runs/` and can be re-analysed without
+further API calls via `--analyse`.
+
 ### Sample Output
 
 ```
