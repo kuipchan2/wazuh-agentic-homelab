@@ -9,11 +9,11 @@
 | Field | Value |
 | --- | --- |
 | Document title | Essential Eight Maturity Assessment and Security Configuration Review — Wazuh Agentic Homelab |
-| Version | 1.0 |
+| Version | 1.1 |
 | Status | Final |
 | Classification | INTERNAL |
 | Assessment period | 19–20 September 2026 |
-| Report date | 20 September 2026 |
+| Report date | 20 September 2026 (v1.0); 20 September 2026 (v1.1, post-remediation) |
 | Assessor | Kui Pang Chan |
 | System owner | Kui Pang Chan |
 | Distribution | Author; prospective employers on request |
@@ -29,6 +29,7 @@ repeated here so that it is visible to anyone reading only the front matter.
 | Version | Date | Author | Change |
 | --- | --- | --- | --- |
 | 1.0 | 20 Sep 2026 | K.P. Chan | Initial issue |
+| 1.1 | 20 Sep 2026 | K.P. Chan | Stage 1 remediation completed and verified; Section 9 added; F-006 scope corrected; RA-002 compensating control verified |
 
 
 ---
@@ -43,6 +44,7 @@ repeated here so that it is visible to anyone reading only the front matter.
 6. Accepted Risks and Exceptions
 7. Remediation Roadmap
 8. Limitations and Assumptions
+9. Remediation Status — Stage 1
 
 Appendix A — Evidence Index
 Appendix B — Control Crosswalk
@@ -602,10 +604,23 @@ named holder, or remove it.
 | Owner | Kui Pang Chan |
 | Target date | 19 November 2026 |
 
-**Observation.** The Wazuh deployment retains vendor default credentials for
-both the API (`wazuh-wui`) and the indexer (`admin`). Both are stored in plain
-text in `docker-compose.yml`. The accompanying `.env` file is empty; no secret
-management mechanism is in use.
+**Observation.** The Wazuh deployment retains vendor default credentials across
+three accounts: the API users `wazuh-wui` (id 2) and `wazuh` (id 1), and the
+indexer account `admin`. All are stored in plain text in `docker-compose.yml`.
+The accompanying `.env` file is empty; no secret management mechanism is in use.
+
+**Extent revised at v1.1.** Investigation of repository history during
+remediation found the same credentials hardcoded in three pipeline scripts
+(`phase3/triage_agent.py`, `phase4/triage_agent_v2.py`,
+`phase4/enrichment_agent.py`) and present in the initial commit of the public
+repository. The original finding described the deployment configuration only and
+understated the extent.
+
+The values themselves are published defaults from the upstream Wazuh
+distribution and were never secret. The exposure is therefore not credential
+disclosure but the disclosure that this deployment had not rotated them —
+and, more materially, a code pattern that would have committed real credentials
+had any been set.
 
 Because these are the published defaults from the upstream Wazuh Docker
 repository, they are known to anyone who has read the project's documentation.
@@ -874,11 +889,18 @@ would add configuration surface and conflicting rule sets without materially
 reducing exposure, given the guest accepts no inbound connections from outside
 the host.
 
-**Compensating control.** Windows Defender Firewall on the parent host. **This
-compensating control has not been verified as part of this assessment** — its
-configuration sits outside the scope defined in Section 2. The acceptance
-therefore rests on an assumption that should be tested before the review date.
-Verifying it is a short task and is recorded as an action rather than a finding.
+**Compensating control.** Windows Defender Firewall on the parent host.
+**Verified at v1.1** (roadmap item 1.6): all three profiles enabled with
+`DefaultInboundAction: Block`. At verification the inbound action was
+`NotConfigured` on every profile — functionally equivalent to Block, since that
+is the platform default, but not the result of any configuration decision. It
+has since been set explicitly, so that a change to it becomes a visible event
+rather than a silent reversion to whatever the platform default happens to be.
+
+Blocked-connection logging was found disabled on all three profiles and has been
+enabled. Until that change, the control was blocking traffic without producing
+any record of what it blocked — effective but unobservable, the same pattern
+recorded in F-009 at the host level.
 
 **Triggers voiding this acceptance.** The guest begins listening on any
 interface reachable from outside the host; the pipeline is deployed to a
@@ -1184,15 +1206,164 @@ The following are assumed and were not verified:
 
 | Assumption | Where it matters | Consequence if false |
 | --- | --- | --- |
-| Windows Defender Firewall is enabled and appropriately configured on the parent host | RA-002 | The firewall acceptance is void and F-008 requires remediation. Scheduled for verification at item 1.6. |
+| ~~Windows Defender Firewall is enabled and appropriately configured on the parent host~~ | RA-002 | **Verified at v1.1** — no longer an assumption. See Section 9.1 item 1.6. |
 | The SCA YAML schema is compatible between versions 4.10.0 and 4.13.0 | All EV-002 results | Individual check results may be unreliable |
 | CVE publication dates reported by the Wazuh feed are accurate | F-001 maturity determination | Vulnerability ages, and therefore the ML0 determination for E8-2, would require recalculation |
 | Third-party services (Anthropic API, AbuseIPDB) operate with integrity | F-010, pipeline output generally | Engine output could be influenced by a supplier without detection |
-| No credential in `docker-compose.yml` was ever committed to repository history | F-006 | Rotation is insufficient; prior values remain recoverable. Scheduled for verification at item 1.3. |
+| ~~No credential in `docker-compose.yml` was ever committed to repository history~~ | F-006 | **Tested at v1.1 and found false.** Credentials were committed, in pipeline source rather than the Compose file. See Section 9.3.1. |
 
-Two of these five are scheduled for verification in Stage 1 of Section 7. The
-remaining three would require capability or access outside the scope of this
-assessment.
+Two of these five were tested in Stage 1. One held; one did not, and the finding
+it supported was revised accordingly (Section 9.3.1). The remaining three would
+require capability or access outside the scope of this assessment.
+
+That one of two tested assumptions proved false is worth weighing when reading
+the three that remain untested.
+
+---
+
+# 9. Remediation Status — Stage 1
+
+Stage 1 of the roadmap in Section 7 was completed on 20 September 2026,
+immediately following issue of version 1.0. This section records what was done,
+what was verified, and what the work changed — including three matters that
+only surfaced during remediation.
+
+Maturity ratings in Section 4 are **unchanged**. Stage 1 was scoped to
+evidence-enabling work and low-cost items; it was never expected to advance any
+strategy to ML1, and it did not.
+
+## 9.1 Completed items
+
+| # | Action | Finding | Verification |
+| --- | --- | --- | --- |
+| 1.1 | Sudo logging enabled via `/etc/sudoers.d/10-logfile` | F-005 | `visudo -c` parsed OK; log entries confirmed at `/var/log/sudo/sudo.log` from the moment of configuration |
+| 1.2 | API credentials rotated for `wazuh-wui` | F-006 | New credential authenticates; **prior credential returns `Unauthorized`** |
+| 1.3 | Repository history searched for committed credentials | F-006 | Found — see 9.3 |
+| 1.4 | `su` restricted to `sugroup`; cron permissions corrected; `cron.allow` / `at.allow` established | F-005 | `/bin/su` now `4750 root:sugroup`; `su` denied to non-members, permitted to members; `crontab -l` functional for allow-listed user |
+| 1.5 | Root umask `027`; shell timeout 900s | F-005 | Configuration files present and readable |
+| 1.6 | Windows Defender Firewall verified and explicitly configured | RA-002 | All three profiles: enabled, `DefaultInboundAction: Block`, `LogBlocked: True` |
+
+Item 1.2 was verified in both directions. Confirming that a new credential works
+does not establish that the old one stopped working, and only the second test
+distinguishes a rotation from an addition.
+
+## 9.2 CIS checks closed
+
+Ten checks move from fail to pass: 35664 (sudo log file), 35668 (`su`
+restriction), 35594–35599 (cron file and directory permissions), 35600–35601
+(`crontab` and `at` restricted to authorised users), 35703 (root umask), 35705
+(shell timeout).
+
+A re-scan will confirm. These are recorded as expected outcomes pending that
+verification, not as verified results — the distinction matters, since several
+CIS checks test conditions more specific than the remediation applied.
+
+## 9.3 Matters arising during remediation
+
+Three items surfaced that were not visible to the original assessment. Each is
+recorded here rather than quietly folded into the findings above.
+
+### 9.3.1 Credentials were hardcoded in pipeline source and committed
+
+F-006 as issued described default credentials in `docker-compose.yml`. Searching
+repository history found the same credentials hardcoded in three pipeline
+scripts and present in the initial public commit.
+
+The credentials are published upstream defaults and were never secret, so this
+is not credential disclosure. It is disclosure that the deployment had not
+rotated them, and — materially — evidence of a pattern that would have committed
+real credentials had any been set.
+
+Credentials were removed from all three scripts and replaced with
+`os.getenv()` lookups before rotation, so that rotation did not break the
+pipeline. F-006 has been revised to reflect the true extent.
+
+**History was not rewritten.** The values in history are public defaults and are
+useless against the rotated credential; rewriting history would invalidate every
+existing clone for no security gain. This is a decision, not an omission, and is
+recorded as such.
+
+### 9.3.2 A second API account remains on default credentials
+
+Enumerating API users during rotation revealed two accounts: `wazuh-wui` (id 2)
+and `wazuh` (id 1). Only `wazuh-wui` was known to the original assessment, and
+only it was rotated. **`wazuh` remains on its default credential.**
+
+This is an incomplete remediation, recorded as such rather than presented as a
+closed item. It is scheduled with the Stage 2 credential work.
+
+The finding behind it is worth stating plainly: the original assessment
+enumerated the credentials visible in a configuration file, not the accounts
+that actually exist on the system. Configuration is where credentials are
+declared; it is not an inventory of what is live.
+
+### 9.3.3 Rotation initially failed with an unhelpful failure mode
+
+The first two rotation attempts set the credential through the Compose
+environment variable and recreated the container. Both caused the manager to
+enter a restart loop. The cause was a password complexity check
+(`WazuhError 5007 — Insecure user password provided`) enforced by the
+initialisation script against the regex
+`^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$`.
+
+Two observations follow.
+
+**The control worked.** A weak credential was rejected rather than accepted.
+That is the correct behaviour.
+
+**The failure mode did not.** Rejection surfaced as a container restarting
+indefinitely, not as a validation error. The operator saw a broken service, not
+a rejected password, and the diagnosis required reading container logs. A
+control that is correct but fails opaquely costs time and invites the wrong
+remediation — in this case, two rollbacks before the cause was identified.
+
+Rotation succeeded via the running API (`PUT /security/users/2`), which returns
+the validation error directly and does not restart the service. The Compose
+environment variable was then updated to match, so that a future recreate does
+not reintroduce the mismatch.
+
+### 9.3.4 A benchmark recommendation conflicted with operability
+
+CIS check 35600 expects `/etc/cron.allow` at mode 640. Applying it made the file
+unreadable to the non-privileged users listed inside it, and `crontab` failed
+with `Permission denied` for an explicitly authorised user.
+
+Mode 644 was adopted instead. The access control the file provides — an
+allow-list — remains fully effective; only the file's own read permission is
+broader. **CIS check 35600 will continue to fail**, and that is accepted rather
+than concealed.
+
+Recorded as an exception: a benchmark recommendation was not implemented as
+written because implementing it disabled the function it was protecting.
+Accepting a permanently failing check is preferable to reporting a passing check
+against a control that does not work.
+
+## 9.4 Position after Stage 1
+
+| Strategy | Before | After |
+| --- | --- | --- |
+| E8-1 Application Control | ML0 | ML0 *(accepted, RA-001)* |
+| E8-2 Patch Applications | ML0 | ML0 |
+| E8-5 Restrict Administrative Privileges | ML0 | ML0 |
+| E8-6 Patch Operating Systems | ML0 | ML0 |
+| E8-7 Multi-Factor Authentication | ML0 | ML0 |
+| E8-8 Regular Backups | ML0 | ML0 |
+| **Overall** | **ML0** | **ML0** |
+
+Nothing moved, as expected.
+
+What changed is not visible in the table. Privileged actions on this host now
+leave a durable record, so the remediation of everything that follows can be
+evidenced — which it could not have been before item 1.1. A published default
+credential no longer grants API access. The compensating control underpinning
+RA-002 has been tested rather than assumed. And the assessment's own picture of
+the environment is more accurate than it was at issue: two of the three matters
+in 9.3 are corrections to findings, not new problems.
+
+Stage 2 remains as scheduled in Section 7, with two additions: rotation of the
+`wazuh` account credential (9.3.2), and rotation of the indexer and dashboard
+credentials, which were deferred from Stage 1 because they require regenerating
+password hashes rather than a configuration change.
 
 ---
 
