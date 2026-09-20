@@ -130,6 +130,10 @@ python3 consistency_eval.py --temperature 0.0 --label temp0 -k 5
 Raw per-call output is retained in `evals/runs/` and can be re-analysed without
 further API calls via `--analyse`.
 
+A full Essential Eight maturity assessment of this environment — findings,
+accepted risks, evidence index and remediation roadmap — is in
+[docs/E8-maturity-assessment-report.md](docs/E8-maturity-assessment-report.md).
+
 ### Sample Output
 
 ```
